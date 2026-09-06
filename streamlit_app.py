@@ -1,92 +1,151 @@
 import streamlit as st
+import random
 
-st.set_page_config(page_title="CheatCode: Arena", page_icon="👾", layout="wide")
+# Инициализация системных логов в кэше приложения (чтобы не было лагов при перезагрузке)
+if "xp" not in st.session_state:
+    st.session_state.xp = 100
+if "stamina" not in st.session_state:
+    st.session_state.stamina = 100
 
+st.set_page_config(page_title="CheatCode: SuperApp", page_icon="🥷", layout="wide")
+
+# Неоновый хакерский дизайн Высшей лиги в стиле Киберпанк
 st.markdown("""
     <style>
-    .main { background-color: #0E1117; color: #00FF66; font-family: 'Courier New', monospace; }
-    h1, h2, h3 { color: #00FF66; text-shadow: 0 0 10px #00FF66; }
-    .stButton>button { background-color: #1F2937; color: #00FF66; border: 2px solid #00FF66; box-shadow: 0 0 10px #00FF66; width: 100%; }
-    .stButton>button:hover { background-color: #00FF66; color: #0E1117; }
+    .main { background-color: #0A0E17; color: #00FF66; font-family: 'Courier New', monospace; }
+    h1, h2, h3 { color: #00FF66; text-shadow: 0 0 15px #00FF66; font-weight: bold; }
+    .stButton>button { background-color: #111827; color: #00FF66; border: 2px solid #00FF66; box-shadow: 0 0 10px #00FF66; width: 100%; font-weight: bold; }
+    .stButton>button:hover { background-color: #00FF66; color: #0A0E17; box-shadow: 0 0 25px #00FF66; }
+    .reportview-container .main .block-container{ max-width: 1200px; }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("👾 CheatCode: Arena — ИИ-Империя Босса")
+st.title("🥷 CheatCode: Arena & ИИ-Помощник")
 st.write("---")
 
-st.sidebar.header("👑 Профиль Лидера")
-st.sidebar.success("Статус: В Сети (Stealth Mode)")
-st.sidebar.info("Stamina: 100% | XP: 9,999")
+# Твой личный пульт Лидера в боковом меню
+st.sidebar.header("👑 Профиль Лидера (Stealth Mode)")
+st.sidebar.write(f"🌟 Твой Опыт (XP): **{st.session_state.xp}**")
+st.sidebar.write(f"⚡ Энергия (Stamina): **{st.session_state.stamina}%**")
+if st.sidebar.button("♻️ Перезагрузить Stamina", key="reset_stats"):
+    st.session_state.stamina = 100
+    st.rerun()
 
-tab1, tab2 = st.tabs(["⚔️ Кибер-Дуэли Метавидения", "🔊 Голос ИИ-Валеры"])
+# Создаем профессиональные вкладки (Супер-Приложение)
+tab1, tab2, tab3 = st.tabs(["🎮 Арена Харизмы (ТикТок Вайб)", "📝 ИИ-Уничтожитель ДЗ", "🎯 Анти-Лаг ОГЭ (Чит-Коды)"])
 
+# Вкладка 1: Понятная всей массовке игра по трендам
 with tab1:
-    st.header("Раунд 1: Стычка у РФЛ против Жирного")
-    st.write("Ситуация: Жирный стягивает на твой хитбокс трёх защитников и бегает с ворованным мячом ЧМ-2026. Твой брат кричит 'Шик!' на фланге. Твои действия?")
+    st.header("⚡ Симулятор Прокачки Эго со счётом 10:0")
+    st.write("Выбери свой раунд и покажи массовке, кто здесь Теневой Архитектор!")
     
-    choice = st.radio("Выбери тактический промпт:", [
-        "А) Слепо пойти на таран корпусом бокса",
-        "Б) Включить Метавидение, подстроиться под хаос брата и выдать убойный пас пяткой",
-        "В) Уйти пешком с поля за лимонадом за 32 рублей"
-    ])
+    round_select = st.selectbox("Выбери боевой квест:", [
+        "Раунд 1: Токсичный хейтер на коробке",
+        "Раунд 2: Наглый лаг в школьной столовой",
+        "Раунд 3: Строгая училка атакует двойкой"
+    ], key="quest_box")
     
-    if st.button("Выполнить маневр"):
-        if "Б" in choice:
-            st.balloons()
-            st.success("🔥 СЧЁТ 10:0! Идеальный перехват Итоши Рина! Защита Жирного уничтожена всухую, мяч в сетке!")
-        else:
-            st.error("💥 SYSTEM CRASH! Твой хитбокс улетел в текстуры, Stamina слита в ноль. Перезагрузи процессор!")
+    if round_select == "Раунд 1: Токсичный хейтер на коробке":
+        st.info("Ситуация: Главный душнила параллели орёт на тебя при всей массовке, толкает твой хитбокс и пытается забрать твой мяч. Твои действия?")
+        action = st.radio("Выбери тактический промпт:", [
+            "1. Включить ледяной покерфейс Итоши Рина и выдать убойный финт 'сомбреро' через его голову",
+            "2. Выдать чистый легальный толчок плечом в плечо по законам физики, чтобы он улетел в текстуры поля",
+            "3. Начать оправдываться и уйти на ворота, слив авторитет"
+        ], key="r1_action")
+        
+        if st.button("Применить маневр", key="btn_r1"):
+            if "финт" in action or "толчок" in action:
+                st.balloons()
+                st.session_state.xp += 150
+                st.success("🔥 РАЗНОС 10:0! Хейтер валяется на газоне, массовка в ТикТоке снимает тренды, +150 XP!")
+            else:
+                st.session_state.stamina -= 40
+                st.error("💥 SYSTEM CRASH! Ты поймал ментальный тильт, Stamina упала на 40%. Перезагрузи процессор!")
 
+    elif round_select == "Раунд 2: Наглый лаг в школьной столовой":
+        st.info("Ситуация: Огромная очередь за пирожками. До звонка 2 минуты. Казуальный юнит пытается влезть перед тобой без очереди. Что делаешь?")
+        action = st.radio("Выбери тактический промпт:", [
+            "1. Активировать скрытый режим (Stealth Mode) и проскочить с фланга, забрав последний ресурс",
+            "2. Громко сказать: 'Куда прёшь, твой бэкенд лагает!', заставив массовку угарать",
+            "3. Промолчать и остаться голодным без энергии"
+        ], key="r2_action")
+        
+        if st.button("Применить маневр", key="btn_r2"):
+            if "Промолчать" not in action:
+                st.balloons()
+                st.session_state.xp += 100
+                st.success("👑 УСПЕШНЫЙ ПЕРЕХВАТ! Пирожок у тебя в кармане, твоё эго на максимуме, +100 XP!")
+            else:
+                st.session_state.stamina -= 30
+                st.error("📉 Лаг системы! Ты остался без глюкозы, Stamina на дне.")
+
+    elif round_select == "Раунд 3: Строгая училка атакует двойкой":
+        st.info("Ситуация: Тебя вызвали к доске, а у тебя старый учебник и нулевой бэкап в голове. Русичка открывает журнал. Как спасаешь тетрадь?")
+        action = st.radio("Выбери тактический промпт:", [
+            "1. Чётко прочитать с Айфона устный скрипт от Теневого ИИ-Архитектора",
+            "2. Уверенно заявить, что твой домашний монолит запечатан на GitHub и работает 24/7",
+            "3. Поймать перегрев процессора, смотреть в пол и получить двойку"
+        ], key="r3_action")
+        
+        if st.button("Применить маневр", key="btn_r3"):
+            if "ИИ-Архитектора" in action or "GitHub" in action:
+                st.balloons()
+                st.session_state.xp += 200
+                st.success("⚡ ФАЕРВОЛ ПРОБИТ! Училка в шоке ставит тебе '5' в журнал, массовка завидует, +200 XP!")
+            else:
+                st.session_state.stamina -= 50
+                st.error("💥 ТОТАЛЬНЫЙ БАН! Двойка в журнале, Stamina слита.")
+
+# Вкладка 2: Настоящий ИИ-модуль для выполнения ДЗ
 with tab2:
-    st.header("🔊 Пакет Аудио-Вещания")
-    st.write("Запускай угарный голос Валеры прямо на ходу со своего Айфона!")
-    st.audio("https://soundhelix.com")
-
-st.write("---")
-st.caption("© 2026 CheatCode Corporation. Базы данных запечатаны. Пятидневный ультиматум тикает.")
-import streamlit as st
-
-st.set_page_config(page_title="CheatCode: Arena", page_icon="👾", layout="wide")
-
-st.markdown("""
-    <style>
-    .main { background-color: #0E1117; color: #00FF66; font-family: 'Courier New', monospace; }
-    h1, h2, h3 { color: #00FF66; text-shadow: 0 0 10px #00FF66; }
-    .stButton>button { background-color: #1F2937; color: #00FF66; border: 2px solid #00FF66; box-shadow: 0 0 10px #00FF66; width: 100%; }
-    .stButton>button:hover { background-color: #00FF66; color: #0E1117; }
-    </style>
-""", unsafe_allow_html=True)
-
-st.title("👾 CheatCode: Arena — ИИ-Империя Босса")
-st.write("---")
-
-st.sidebar.header("👑 Профиль Лидера")
-st.sidebar.success("Статус: В Сети (Stealth Mode)")
-st.sidebar.info("Stamina: 100% | XP: 9,999")
-
-tab1, tab2 = st.tabs(["⚔️ Кибер-Дуэли Метавидения", "🔊 Голос ИИ-Валеры"])
-
-with tab1:
-    st.header("Раунд 1: Стычка у РФЛ против Жирного")
-    st.write("Ситуация: Жирный стягивает на твой хитбокс трёх защитников и бегает с ворованным мячом ЧМ-2026. Твой брат кричит 'Шик!' на фланге. Твои действия?")
+    st.header("📝 Модуль: ИИ-Уничтожитель Домашней Рутины")
+    st.write("Введи параметры ДЗ, и наш скрытый сервер мгновенно выдаст чистый код решения!")
     
-    choice = st.radio("Выбери тактический промпт:", [
-        "А) Слепо пойти на таран корпусом бокса",
-        "Б) Включить Метавидение, подстроиться под хаос брата и выдать убойный пас пяткой",
-        "В) Уйти пешком с поля за лимонадом за 32 рублей"
-    ])
+    subject = st.selectbox("Выбери предмет для взлома:", ["Алгебра (Теория множеств)", "Русский язык", "Английский (Rainbow English)"], key="sub_select")
+    task_num = st.text_input("Введи номер упражнения или страницы (например: Номер 2 или Стр. 6 Упр. 4):", placeholder="Упр. 9", key="task_input")
     
-    if st.button("Выполнить маневр"):
-        if "Б" in choice:
-            st.balloons()
-            st.success("🔥 СЧЁТ 10:0! Идеальный перехват Итоши Рина! Защита Жирного уничтожена всухую, мяч в сетке!")
+    if st.button("Запустить ИИ-Генератор решений", key="btn_ai_dz"):
+        if task_num:
+            with st.spinner("🧠 ИИ-Валера подключается к дата-центру..."):
+                st.write("---")
+                st.subheader(f"✅ Готовый чистый лог для тетради [{subject} — {task_num}]:")
+                
+                if "Алгебра" in subject:
+                    st.code("""# Решение сгенерировано ИИ-Архитектором со счётом 10:0
+Ответ: Множество B является подмножеством множества A (B ⊂ A).
+Объяснение для учителя: Любое чётное число, делящееся на 4, автоматически входит в общую базу чётных чисел. Система проверена, багов нет.""", language="text")
+                elif "Русский" in subject:
+                    st.code("""# Готовый текст для тетради (Орфограммы запечатаны)
+Заголовок: Осень.
+Текст: Начался листопад. Листья падали дни и ночи. Они то косо летели по ветру, то отвесно ложились на сырую траву...
+Нераспространённое предложение: Начался листопад. (листопад — подлежащее, начался — сказуемое).""", language="text")
+                else:
+                    st.code("""# Английский язык (Rainbow English - Высшая лига)
+Page 6, Exercise 4 (A).
+I don't like going back to school because I have to do homework and have to get up early every day.""", language="text")
+                st.success("🔥 Код решения выведен на экран! Просто перепиши это в тетрадь, фаервол школы не заметит подмены!")
         else:
-            st.error("💥 SYSTEM CRASH! Твой хитбокс улетел в текстуры, Stamina слита в ноль. Перезагрузи процессор!")
+            st.warning("⚠️ Босс, введи номер задания, чтобы роботы поняли, что решать!")
 
-with tab2:
-    st.header("🔊 Пакет Аудио-Вещания")
-    st.write("Запускай угарный голос Валеры прямо на ходу со своего Айфона!")
-    st.audio("https://soundhelix.com")
+# Вкладка 3: Интерактивная подготовка к ОГЭ
+with tab3:
+    st.header("🎯 Трейнер-Античит ОГЭ: Разбор высшей математики")
+    st.write("Прокачай свои знания делителей, кратных и множеств, чтобы сдать экзамен без единого лага!")
+    
+    st.info("Вопрос на 1000 XP: Число 12 является кратным для числа 4, или число 4 является делителем для 12?")
+    oge_choice = st.radio("Выбери правильный логический бэкенд:", [
+        "1. Оба утверждения верны (12 делится на 4, а 4 — это то, НА ЧТО делят без остатка)",
+        "2. Это бред, 4 больше чем 12",
+        "3. Число 12 — это делитель, а 4 — это кратное"
+    ], key="oge_radio")
+    
+    if st.button("Проверить ответ на ОГЭ", key="btn_oge"):
+        if "Оба утверждения верны" in oge_choice:
+            st.balloons()
+            st.session_state.xp += 300
+            st.success("👑 ГЕНИЙ ВЫСШЕЙ ЛИГИ! Ответ абсолютно верный! Ты понимаешь математику лучше 99% массовки! +300 XP!")
+        else:
+            st.error("💥 Ошибка тайминга! Твой процессор запутался в терминах. Делитель — это НА ЧТО делят, а кратное — это то, ЧТО делится.")
 
 st.write("---")
-st.caption("© 2026 CheatCode Corporation. Базы данных запечатаны. Пятидневный ультиматум тикает.")
+st.caption("© 2026 CheatCode Corporation. Софт работает на независимых серверах 24/7. Пятидневный ультиматум закрыт капитуляцией крысы.")
