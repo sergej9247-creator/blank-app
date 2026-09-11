@@ -1,151 +1,170 @@
 import streamlit as st
 import random
+from google import genai
+from google.genai import types
 
-# Инициализация системных логов в кэше приложения (чтобы не было лагов при перезагрузке)
-if "xp" not in st.session_state:
-    st.session_state.xp = 100
-if "stamina" not in st.session_state:
-    st.session_state.stamina = 100
+# Настройка страницы под игровой стиль
+st.set_page_config(page_title="Чит-код ХАБ", page_icon="🎒", layout="centered")
 
-st.set_page_config(page_title="CheatCode: SuperApp", page_icon="🥷", layout="wide")
+# --- 1. ПОДКЛЮЧЕНИЕ НАСТОЯЩЕГО ИИ GEMINI ---
+# Замени эту строчку на свой секретный ключ из Google AI Studio (://google.com)
+API_KEY = "ТВОЙ_КЛЮЧ_СЮДА" 
 
-# Неоновый хакерский дизайн Высшей лиги в стиле Киберпанк
-st.markdown("""
-    <style>
-    .main { background-color: #0A0E17; color: #00FF66; font-family: 'Courier New', monospace; }
-    h1, h2, h3 { color: #00FF66; text-shadow: 0 0 15px #00FF66; font-weight: bold; }
-    .stButton>button { background-color: #111827; color: #00FF66; border: 2px solid #00FF66; box-shadow: 0 0 10px #00FF66; width: 100%; font-weight: bold; }
-    .stButton>button:hover { background-color: #00FF66; color: #0A0E17; box-shadow: 0 0 25px #00FF66; }
-    .reportview-container .main .block-container{ max-width: 1200px; }
-    </style>
-""", unsafe_allow_html=True)
+@st.cache_resource
+def init_ai():
+    if API_KEY == "ТВОЙ_КЛЮЧ_СЮДА":
+        return None
+    # Инициализируем официальный клиент Google GenAI
+    return genai.Client(api_key=API_KEY)
 
-st.title("🥷 CheatCode: Arena & ИИ-Помощник")
-st.write("---")
+client = init_ai()
 
-# Твой личный пульт Лидера в боковом меню
-st.sidebar.header("👑 Профиль Лидера (Stealth Mode)")
-st.sidebar.write(f"🌟 Твой Опыт (XP): **{st.session_state.xp}**")
-st.sidebar.write(f"⚡ Энергия (Stamina): **{st.session_state.stamina}%**")
-if st.sidebar.button("♻️ Перезагрузить Stamina", key="reset_stats"):
-    st.session_state.stamina = 100
-    st.rerun()
+# Жесткая инструкция (Системный промпт), которая заставляет ИИ быть мемным репетитором
+SYSTEM_INSTRUCTION = """
+Ты — продвинутый ИИ-репетитор для школьников 5-11 классов по имени "Чит-код". 
+Твоя цель — объяснять любые школьные предметы (математику, русский, историю, биологию и др.) простым языком, используя актуальный молодежный сленг и мемы. 
+Используй слова: 'сигма', 'босс КФС', 'кринж', 'вайб', 'рил', 'тапать', 'база', 'проветриться', 'флексить', 'скибиди' (редко и уместно), примеры из игр (Minecraft, Roblox, Dota 2, Brawl Stars).
+Отвечай коротко, емко, без скучных длинных текстов, разбивай мысли на абзацы с эмодзи. Школьники ленивые, длинный текст читать не будут.
+Пользователь может использовать команды /Математика, /Русский, /История — подстраивайся под нужный предмет.
+"""
 
-# Создаем профессиональные вкладки (Супер-Приложение)
-tab1, tab2, tab3 = st.tabs(["🎮 Арена Харизмы (ТикТок Вайб)", "📝 ИИ-Уничтожитель ДЗ", "🎯 Анти-Лаг ОГЭ (Чит-Коды)"])
+# --- 2. СИСТЕМА АВТОРИЗАЦИИ (Всплывающее окно) ---
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "player_name" not in st.session_state:
+    st.session_state.player_name = ""
 
-# Вкладка 1: Понятная всей массовке игра по трендам
-with tab1:
-    st.header("⚡ Симулятор Прокачки Эго со счётом 10:0")
-    st.write("Выбери свой раунд и покажи массовке, кто здесь Теневой Архитектор!")
+@st.dialog("🔐 ВХОД В ЧИТ-КОД")
+def login_dialog():
+    st.write("Добро пожаловать, босс! Придумай ник для Лиги Сигм.")
+    input_name = st.text_input("Введи свой никнейм:", placeholder="Например: Sigma_Brawl")
     
-    round_select = st.selectbox("Выбери боевой квест:", [
-        "Раунд 1: Токсичный хейтер на коробке",
-        "Раунд 2: Наглый лаг в школьной столовой",
-        "Раунд 3: Строгая училка атакует двойкой"
-    ], key="quest_box")
+    if st.button("🚀 СОЗДАТЬ АККАУНТ", use_container_width=True):
+        if input_name.strip() != "":
+            st.session_state.player_name = input_name
+            st.session_state.logged_in = True
+            st.toast(f"Активирован аккаунт: {input_name}! ⚡", icon="✅")
+            st.rerun()
+        else:
+            st.error("Ник не может быть пустым!")
+
+# Принудительный вход при первом открытии сайта
+if not st.session_state.logged_in:
+    login_dialog()
+    st.warning("Авторизуйся, чтобы спасти свой прогресс IQ!")
+    st.stop()
+
+# --- 3. ПАМЯТЬ ИГРЫ (После авторизации) ---
+if "iq" not in st.session_state:
+    st.session_state.iq = 100  # Все начинают со 100 IQ
+if "box_stage" not in st.session_state:
+    st.session_state.box_stage = "closed"
+if "items_left" not in st.session_state:
+    st.session_state.items_left = 0
+if "chat_messages" not in st.session_state:
+    st.session_state.chat_messages = []
+
+# Динамическая система корпусов вместо обычных лиг
+def get_school_building(iq):
+    if iq < 120: return "🏢 КОРПУС 'Г' (Хозблок новичков) ❌"
+    elif iq < 150: return "🏢 КОРПУС 'В' (Обычное крыло) 跑"
+    elif iq < 200: return "🏢 КОРПУС 'Б' (Крыло отличников) ⭐"
+    else: return "🏛️ КОРПУС 'А' (ГЛАВНОЕ ЗДАНИЕ СИГМ) 👑"
+
+# --- 4. БОКОВОЕ МЕНЮ (Твой левый блок хаба) ---
+st.sidebar.title(f"🎒 ЧИТ-КОД ХАБ")
+st.sidebar.markdown(f"👤 Ник: **{st.session_state.player_name}**")
+st.sidebar.markdown(f"🧠 Рейтинг: **{st.session_state.iq} IQ**")
+st.sidebar.markdown(f"🏰 Твой статус: \n`{get_school_building(st.session_state.iq)}`")
+st.sidebar.markdown("---")
+
+# Переключатель режимов
+mode = st.sidebar.radio("Выбери режим:", ["💬 1. Настоящий ИИ-Помощник", "🎰 2. Мегаящик за IQ"])
+
+st.sidebar.markdown("---")
+if st.sidebar.button("👑 VIP ПОДПИСКА (199₽)", use_container_width=True):
+    st.sidebar.info("Форма оплаты СБП генерируется... (После 6 марта)")
+
+# --- 5. РАБОТА ИГРОВЫХ РЕЖИМОВ ---
+
+# Режим 1: Живой ИИ-Чат
+if mode == "💬 1. Настоящий ИИ-Помощник":
+    st.title("💬 Настоящий ИИ-Помощник")
+    st.write("Задавай любые вопросы по домашке! Используй `/Предмет` в начале для точности.")
+    st.markdown("---")
     
-    if round_select == "Раунд 1: Токсичный хейтер на коробке":
-        st.info("Ситуация: Главный душнила параллели орёт на тебя при всей массовке, толкает твой хитбокс и пытается забрать твой мяч. Твои действия?")
-        action = st.radio("Выбери тактический промпт:", [
-            "1. Включить ледяной покерфейс Итоши Рина и выдать убойный финт 'сомбреро' через его голову",
-            "2. Выдать чистый легальный толчок плечом в плечо по законам физики, чтобы он улетел в текстуры поля",
-            "3. Начать оправдываться и уйти на ворота, слив авторитет"
-        ], key="r1_action")
+    # Отображаем историю чата
+    for msg in st.session_state.chat_messages:
+        with st.chat_message(msg["role"]):
+            st.write(msg["text"])
+            
+    # Поле ввода сообщений
+    if user_input := st.chat_input("Напиши: /Математика что такое дроби"):
+        with st.chat_message("user"):
+            st.write(user_input)
+        st.session_state.chat_messages.append({"role": "user", "text": user_input})
         
-        if st.button("Применить маневр", key="btn_r1"):
-            if "финт" in action or "толчок" in action:
-                st.balloons()
-                st.session_state.xp += 150
-                st.success("🔥 РАЗНОС 10:0! Хейтер валяется на газоне, массовка в ТикТоке снимает тренды, +150 XP!")
+        # Запрос к живому ИИ Gemini
+        with st.chat_message("assistant"):
+            if client is None:
+                ai_reply = "❌ Ошибка: Ты забыл вставить настоящий API_KEY в код! Замени строчку 'ТВОЙ_КЛЮЧ_СЮДА' на реальный ключ из Google AI Studio."
+                st.write(ai_reply)
             else:
-                st.session_state.stamina -= 40
-                st.error("💥 SYSTEM CRASH! Ты поймал ментальный тильт, Stamina упала на 40%. Перезагрузи процессор!")
+                with st.spinner("ИИ разгоняет мозг..."):
+                    try:
+                        # Отправляем запрос модели gemini-2.5-flash с нашей инструкцией сленга
+                        response = client.models.generate_content(
+                            model='gemini-2.5-flash',
+                            contents=user_input,
+                            config=types.GenerateContentConfig(
+                                system_instruction=SYSTEM_INSTRUCTION,
+                                temperature=0.7
+                            )
+                        )
+                        ai_reply = response.text
+                        st.write(ai_reply)
+                        st.session_state.iq += 2  # Даем +2 IQ за то, что школьник просто учится!
+                    except Exception as e:
+                        ai_reply = f"💥 Что-то пошло не так при запросе к ИИ: {e}"
+                        st.write(ai_reply)
+                        
+        st.session_state.chat_messages.append({"role": "assistant", "text": ai_reply})
+        st.rerun()
 
-    elif round_select == "Раунд 2: Наглый лаг в школьной столовой":
-        st.info("Ситуация: Огромная очередь за пирожками. До звонка 2 минуты. Казуальный юнит пытается влезть перед тобой без очереди. Что делаешь?")
-        action = st.radio("Выбери тактический промпт:", [
-            "1. Активировать скрытый режим (Stealth Mode) и проскочить с фланга, забрав последний ресурс",
-            "2. Громко сказать: 'Куда прёшь, твой бэкенд лагает!', заставив массовку угарать",
-            "3. Промолчать и остаться голодным без энергии"
-        ], key="r2_action")
-        
-        if st.button("Применить маневр", key="btn_r2"):
-            if "Промолчать" not in action:
-                st.balloons()
-                st.session_state.xp += 100
-                st.success("👑 УСПЕШНЫЙ ПЕРЕХВАТ! Пирожок у тебя в кармане, твоё эго на максимуме, +100 XP!")
-            else:
-                st.session_state.stamina -= 30
-                st.error("📉 Лаг системы! Ты остался без глюкозы, Stamina на дне.")
-
-    elif round_select == "Раунд 3: Строгая училка атакует двойкой":
-        st.info("Ситуация: Тебя вызвали к доске, а у тебя старый учебник и нулевой бэкап в голове. Русичка открывает журнал. Как спасаешь тетрадь?")
-        action = st.radio("Выбери тактический промпт:", [
-            "1. Чётко прочитать с Айфона устный скрипт от Теневого ИИ-Архитектора",
-            "2. Уверенно заявить, что твой домашний монолит запечатан на GitHub и работает 24/7",
-            "3. Поймать перегрев процессора, смотреть в пол и получить двойку"
-        ], key="r3_action")
-        
-        if st.button("Применить маневр", key="btn_r3"):
-            if "ИИ-Архитектора" in action or "GitHub" in action:
-                st.balloons()
-                st.session_state.xp += 200
-                st.success("⚡ ФАЕРВОЛ ПРОБИТ! Училка в шоке ставит тебе '5' в журнал, массовка завидует, +200 XP!")
-            else:
-                st.session_state.stamina -= 50
-                st.error("💥 ТОТАЛЬНЫЙ БАН! Двойка в журнале, Stamina слита.")
-
-# Вкладка 2: Настоящий ИИ-модуль для выполнения ДЗ
-with tab2:
-    st.header("📝 Модуль: ИИ-Уничтожитель Домашней Рутины")
-    st.write("Введи параметры ДЗ, и наш скрытый сервер мгновенно выдаст чистый код решения!")
+# Режим 2: Открытие Мегаящиков за IQ
+elif mode == "🎰 2. Мегаящик за IQ":
+    st.title("🎰 СИМУЛЯТОР МЕГАЯЩИКА")
+    st.write("Рискни интеллектом ради крутого дропа! Стоимость открытия: **20 IQ**.")
     
-    subject = st.selectbox("Выбери предмет для взлома:", ["Алгебра (Теория множеств)", "Русский язык", "Английский (Rainbow English)"], key="sub_select")
-    task_num = st.text_input("Введи номер упражнения или страницы (например: Номер 2 или Стр. 6 Упр. 4):", placeholder="Упр. 9", key="task_input")
-    
-    if st.button("Запустить ИИ-Генератор решений", key="btn_ai_dz"):
-        if task_num:
-            with st.spinner("🧠 ИИ-Валера подключается к дата-центру..."):
-                st.write("---")
-                st.subheader(f"✅ Готовый чистый лог для тетради [{subject} — {task_num}]:")
+    if st.session_state.box_stage == "closed":
+        # Рисуем ящик из эмодзи-аарта
+        megabox_art = "🟪🟪🟪🟪🟪\n🟪🟥🟨🟥🟪\n🟪🟥🟨🟥🟪\n🟪🟪🟪🟪🟪"
+        st.markdown(f"<pre style='font-size: 20px; line-height: 1.2; text-align: center;'>{megabox_art}</pre>", unsafe_allow_html=True)
+        
+        if st.button("🚀 ОТКРЫТЬ ЯЩИК ЗА 20 IQ 🚀", use_container_width=True):
+            if st.session_state.iq >= 100:  # Не даем упасть ниже несгораемых 80 IQ после траты 20 баллов
+                st.session_state.iq -= 20
+                st.session_state.items_left = 3
+                st.session_state.box_stage = "opening"
+                st.rerun()
+            else:
+                st.error("❌ Слишком низкий IQ! Корпус 'Г' запрещает тратить баллы. Иди качай мозги в чат!")
                 
-                if "Алгебра" in subject:
-                    st.code("""# Решение сгенерировано ИИ-Архитектором со счётом 10:0
-Ответ: Множество B является подмножеством множества A (B ⊂ A).
-Объяснение для учителя: Любое чётное число, делящееся на 4, автоматически входит в общую базу чётных чисел. Система проверена, багов нет.""", language="text")
-                elif "Русский" in subject:
-                    st.code("""# Готовый текст для тетради (Орфограммы запечатаны)
-Заголовок: Осень.
-Текст: Начался листопад. Листья падали дни и ночи. Они то косо летели по ветру, то отвесно ложились на сырую траву...
-Нераспространённое предложение: Начался листопад. (листопад — подлежащее, начался — сказуемое).""", language="text")
-                else:
-                    st.code("""# Английский язык (Rainbow English - Высшая лига)
-Page 6, Exercise 4 (A).
-I don't like going back to school because I have to do homework and have to get up early every day.""", language="text")
-                st.success("🔥 Код решения выведен на экран! Просто перепиши это в тетрадь, фаервол школы не заметит подмены!")
-        else:
-            st.warning("⚠️ Босс, введи номер задания, чтобы роботы поняли, что решать!")
-
-# Вкладка 3: Интерактивная подготовка к ОГЭ
-with tab3:
-    st.header("🎯 Трейнер-Античит ОГЭ: Разбор высшей математики")
-    st.write("Прокачай свои знания делителей, кратных и множеств, чтобы сдать экзамен без единого лага!")
-    
-    st.info("Вопрос на 1000 XP: Число 12 является кратным для числа 4, или число 4 является делителем для 12?")
-    oge_choice = st.radio("Выбери правильный логический бэкенд:", [
-        "1. Оба утверждения верны (12 делится на 4, а 4 — это то, НА ЧТО делят без остатка)",
-        "2. Это бред, 4 больше чем 12",
-        "3. Число 12 — это делитель, а 4 — это кратное"
-    ], key="oge_radio")
-     
-    if st.button("Проверить ответ на ОГЭ", key="btn_oge"):
-        if "Оба утверждения верны" in oge_choice:
-            st.balloons()
-            st.session_state.xp += 300
-            st.success("👑 ГЕНИЙ ВЫСШЕЙ ЛИГИ! Ответ абсолютно верный! Ты понимаешь математику лучше 99% массовки! +300 XP!")
-        else:
-            st.error("💥 Ошибка тайминга! Твой процессор запутался в терминах. Делитель — это НА ЧТО делят, а кратное — это то, ЧТО делится.")
-
-st.write("---")
-st.caption("© 2026 CheatCode Corporation. Софт работает на независимых серверах 24/7. Пятидневный ультиматум закрыт капитуляцией крысы.")
+    elif st.session_state.box_stage == "opening":
+        st.markdown(f"<h3 style='text-align: center; color: yellow;'>⚡ Осталось кликов: {st.session_state.items_left} ⚡</h3>", unsafe_allow_html=True)
+        if st.button("👉 ТАПНИ ПО ЯЩИКУ! 👈", use_container_width=True):
+            if st.session_state.items_left > 1:
+                st.toast("Выпало: +50 очков силы 🔋", icon="🎁")
+                st.session_state.items_left -= 1
+                st.rerun()
+            else:
+                st.session_state.box_stage = "drop"
+                st.rerun()
+                
+    elif st.session_state.box_stage == "drop":
+        st.balloons() # Салют на весь экран!
+        skins = ["👑 Скин: 'Гигачад-Ломоносов'", "🌌 Тема чата: 'Неоновый Скибиди'", "🔥 Огненный Никнейм"]
+        st.success(f"🎉 ТЕБЕ ВЫПАЛО: {random.choice(skins)}!")
+        if st.button("Забрать в инвентарь", use_container_width=True):
+            st.session_state.box_stage = "closed"
+            st.rerun()
